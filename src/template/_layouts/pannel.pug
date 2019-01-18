@@ -1,0 +1,35 @@
+.panel
+  .panel-heading
+    | repositories
+  .panel-block
+    .field.has-addons.is-expanded
+      .control.is-expanded
+        input.input.js-input.is-fullwidth(type='text', placeholder='Find a repository')
+      .control
+        a.button.is-info(role="button", data-action ="addToDo")
+          i.fas.fa-plus
+  .panel-tabs
+    a.is-active all
+    a public
+    a private
+    a sources
+    a forks
+  .js-todos
+    a.panel-block.is-active
+      span.panel-icon
+        i.fas.fa-check(aria-hidden='true')
+      |     bulma
+    a.panel-block
+      span.panel-icon
+        i.fas.fa-book(aria-hidden='true')
+      |     marksheet
+    a.panel-block
+      span.panel-icon
+        i.fas.fa-book(aria-hidden='true')
+      |     minireset.css
+    label.panel-block
+      input(type='checkbox')
+      |     remember me
+    .panel-block
+      button.button.is-link.is-outlined.is-fullwidth
+        | reset all filters

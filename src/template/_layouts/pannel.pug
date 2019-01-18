@@ -18,7 +18,11 @@
     a.panel-block.is-active
       span.panel-icon
         i.fas.fa-check(aria-hidden='true')
-      |     bulma
+      span.js-txt-todo
+        |     bulma
+      button.button(role='button', data-action = "editToDo")
+        span.icon.is-small
+          i.fas.fa-edit(aria-hidden='true')
     a.panel-block
       span.panel-icon
         i.fas.fa-book(aria-hidden='true')

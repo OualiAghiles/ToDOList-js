@@ -24,11 +24,11 @@ try {
 // -------------- partie deux --------------------
 //      -- Edition --
 // au click sur une todo barrer
-//      si click sur le btn edite capturer le text
-//      mettre le text dans le champ
-//      si
-//          valider (partie une)
-//      sinon ne rien faire
+//      * si click sur le btn edite capturer le text
+//      * mettre le text dans le champ
+//      * si
+//          * valider (partie une)
+//      * sinon ne rien faire
 //
 // ---------------- Partie trois -------------------
 //      -- suppretion --
@@ -51,6 +51,7 @@ class ToDoList {
 
     this.addTodo()
     this.editToDo()
+    this.completeToDo()
   }
 
   /**
@@ -89,6 +90,15 @@ class ToDoList {
       })
     })
 
+  }
+
+  completeToDo () {
+    let todos = this.listToDos.querySelectorAll('.panel-block')
+    todos.forEach(todo => {
+      todo.addEventListener('click', () => {
+        todo.classList.toggle('js-is-completed')
+      })
+    })
   }
 
   /**

@@ -71,9 +71,9 @@ class ToDoList {
     /**
      * creatElementList - Description
      *
-     * @param {type} innerText Description
+     * @param {string} innerText Description
      *
-     * @returns {type} Description
+     * @returns {HTMLElemnt} Description
      */
     creatElementList(innerText) {
       let newToDo = document.createElement("a")

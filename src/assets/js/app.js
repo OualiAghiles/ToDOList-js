@@ -48,10 +48,12 @@ class ToDoList {
     this.container = selector
     this.input = this.container.querySelector('.js-input')
     this.listToDos = this.container.querySelector('.js-todos')
-
+    this.btnEdit = this.container.querySelectorAll('[data-action = "editToDo"]')
+    this.btnremove = this.container.querySelectorAll('[data-action = "removeToDo"]')
     this.addTodo()
-    this.editToDo()
+    this.editToDo(this.btnEdit)
     this.completeToDo()
+    this.removeTodo()
   }
 
   /**
@@ -76,15 +78,20 @@ class ToDoList {
       } else {
         return false
       }
+      this.btnEdit = this.container.querySelectorAll('[data-action = "editToDo"]')
+      this.btnremove = this.container.querySelectorAll('[data-action = "removeToDo"]')
+      this.editToDo(this.btnEdit)
+      this.removeTodo(this.btnremove)
     })
   }
-  editToDo () {
-    let btnEdit = this.container.querySelectorAll('[data-action = "editToDo"]')
+  editToDo (btnEdit) {
+
     btnEdit.forEach(elem => {
       elem.addEventListener('click', () => {
-        elem.parentNode.classList.add('js-is-edited')
 
-        let contentText = elem.parentNode.querySelector('.js-txt-todo')
+        elem.parentNode.parentNode.classList.add('js-is-edited')
+
+        let contentText = elem.parentNode.parentNode.querySelector('.js-txt-todo')
         this.input.value = contentText.innerHTML
         console.log( contentText.innerHTML)
       })
@@ -97,6 +104,14 @@ class ToDoList {
     todos.forEach(todo => {
       todo.addEventListener('click', () => {
         todo.classList.toggle('js-is-completed')
+      })
+    })
+  }
+  removeTodo (btnremove) {
+    btnremove.forEach(removetodo => {
+      removetodo.addEventListener('click', () => {
+        let toRemove = removetodo.parentNode.parentNode
+        toRemove.remove()
       })
     })
   }
@@ -118,12 +133,39 @@ class ToDoList {
     let newToDoIconFa = document.createElement("i")
     newToDoIconFa.classList.add('fas')
     newToDoIconFa.classList.add('fa-check')
+
     let newText = document.createElement("span")
     newText.classList.add('js-txt-todo')
     newText.innerHTML = innerText
+
+    let btnAction = document.createElement("span")
+    btnAction.classList.add('buttons')
+    btnAction.classList.add('has-addons')
+    // btn Edit
+    let btnEdit = document.createElement("span")
+    btnEdit.classList.add('button')
+    btnEdit.dataset.action = 'editToDo'
+    let editIcone = document.createElement("i")
+    editIcone.classList.add('fas')
+    editIcone.classList.add('fa-edit')
+    btnEdit.appendChild(editIcone)
+    // btn remove
+    let btnRemoveToDo = document.createElement("span")
+    btnRemoveToDo.classList.add('button')
+    btnRemoveToDo.dataset.action = 'removeToDo'
+    let btnRemoveToDoIcone = document.createElement("i")
+    btnRemoveToDoIcone.classList.add('fas')
+    btnRemoveToDoIcone.classList.add('fa-trash-alt')
+    btnRemoveToDo.appendChild(btnRemoveToDoIcone)
+    /// btns
+    btnAction.appendChild(btnEdit)
+    btnAction.appendChild(btnRemoveToDo)
+
     newToDoIcon.appendChild(newToDoIconFa)
     newToDo.appendChild(newToDoIcon)
     newToDo.appendChild(newText)
+    newToDo.appendChild(btnAction)
+
     this.listToDos.prepend(newToDo)
   }
 }

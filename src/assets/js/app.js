@@ -84,6 +84,11 @@ class ToDoList {
       this.removeTodo(this.btnremove)
     })
   }
+
+  /**
+   *
+   * @param btnEdit
+   */
   editToDo (btnEdit) {
 
     btnEdit.forEach(elem => {
@@ -99,6 +104,9 @@ class ToDoList {
 
   }
 
+  /**
+   *
+   */
   completeToDo () {
     let todos = this.listToDos.querySelectorAll('.panel-block')
     todos.forEach(todo => {
@@ -107,6 +115,11 @@ class ToDoList {
       })
     })
   }
+
+  /**
+   *
+   * @param btnremove
+   */
   removeTodo (btnremove) {
     btnremove.forEach(removetodo => {
       removetodo.addEventListener('click', () => {

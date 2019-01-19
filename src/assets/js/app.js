@@ -48,12 +48,8 @@ class ToDoList {
     this.container = selector
     this.input = this.container.querySelector('.js-input')
     this.listToDos = this.container.querySelector('.js-todos')
-    this.btnEdit = this.container.querySelectorAll('[data-action = "editToDo"]')
-    this.btnremove = this.container.querySelectorAll('[data-action = "removeToDo"]')
+   
     this.addTodo()
-    this.editToDo(this.btnEdit)
-    this.completeToDo()
-    this.removeTodo()
   }
 
   /**
@@ -62,9 +58,24 @@ class ToDoList {
    * @returns {HTMLElement} The new todo
    */
   addTodo () {
+    this.input.addEventListener('keypress', (e) => {
+      if (e.keyCode == 13) {
+        this.addingContent()
+      }
+      if (e.keyCode == 27) {
+        this.input.value = ''
+        this.input.blur()
+        this.container.querySelector('.is-active').classList.remove('is-active')
+      }
+    })
+
     let btnAdd = this.container.querySelector('[data-action = "addToDo"]')
-    btnAdd.addEventListener('click', () => {
-      let contentToDo = this.input.value
+    btnAdd.addEventListener('click', (e) => {
+      this.addingContent()
+    })
+  }
+  addingContent () {
+    let contentToDo = this.input.value
       if (contentToDo !== "") {
         if (!this.container.querySelector('.js-is-edited')) {
           this.creatElementList(contentToDo)
@@ -73,32 +84,34 @@ class ToDoList {
           let correcteToDo = editedToDo.querySelector('.js-txt-todo')
           correcteToDo.innerText = contentToDo
           editedToDo.classList.remove('js-is-edited')
+          editedToDo.classList.remove('is-active')
         }
         this.input.value = ''
       } else {
         return false
       }
-      this.btnEdit = this.container.querySelectorAll('[data-action = "editToDo"]')
-      this.btnremove = this.container.querySelectorAll('[data-action = "removeToDo"]')
-      this.editToDo(this.btnEdit)
-      this.removeTodo(this.btnremove)
-    })
-  }
+      this.editToDo()
+      this.removeTodo()
+      this.completeToDo()
 
+      this.input.focus()
+  }
   /**
    *
    * @param btnEdit
    */
-  editToDo (btnEdit) {
-
+  editToDo () {
+    let btnEdit = this.container.querySelectorAll('[data-action = "editToDo"]')
     btnEdit.forEach(elem => {
-      elem.addEventListener('click', () => {
+      elem.addEventListener('click', (e) => {
 
         elem.parentNode.parentNode.classList.add('js-is-edited')
+        elem.parentNode.parentNode.classList.add('is-active')
 
         let contentText = elem.parentNode.parentNode.querySelector('.js-txt-todo')
         this.input.value = contentText.innerHTML
-        console.log( contentText.innerHTML)
+        this.input.focus()
+        e.stopPropagation()
       })
     })
 
@@ -109,20 +122,34 @@ class ToDoList {
    */
   completeToDo () {
     let todos = this.listToDos.querySelectorAll('.panel-block')
+    console.log(todos);
     todos.forEach(todo => {
-      todo.addEventListener('click', () => {
-        todo.classList.toggle('js-is-completed')
+      todo.addEventListener('click', function(e)  {
+        console.log(e);
+        console.log(this);
+
+        if (this.classList.contains('js-is-completed')) {
+          this.classList.remove('js-is-completed')
+
+        } else {
+          this.classList.add('js-is-completed')
+
+        }
       })
     })
+    
   }
 
   /**
    *
-   * @param btnremove
+   * @param 
+   * Description - removeTodo
    */
-  removeTodo (btnremove) {
+  removeTodo () {
+    let btnremove = this.container.querySelectorAll('[data-action = "removeToDo"]')
     btnremove.forEach(removetodo => {
-      removetodo.addEventListener('click', () => {
+      removetodo.addEventListener('click', (e) => {
+        e.stopPropagation()
         let toRemove = removetodo.parentNode.parentNode
         toRemove.remove()
       })
@@ -157,6 +184,10 @@ class ToDoList {
     // btn Edit
     let btnEdit = document.createElement("span")
     btnEdit.classList.add('button')
+    btnEdit.classList.add('is-small')
+    btnEdit.classList.add('is-info')
+    btnEdit.classList.add('is-outlined')
+
     btnEdit.dataset.action = 'editToDo'
     let editIcone = document.createElement("i")
     editIcone.classList.add('fas')
@@ -165,6 +196,9 @@ class ToDoList {
     // btn remove
     let btnRemoveToDo = document.createElement("span")
     btnRemoveToDo.classList.add('button')
+    btnRemoveToDo.classList.add('is-small')
+    btnRemoveToDo.classList.add('is-outlined')
+    btnRemoveToDo.classList.add('is-danger')
     btnRemoveToDo.dataset.action = 'removeToDo'
     let btnRemoveToDoIcone = document.createElement("i")
     btnRemoveToDoIcone.classList.add('fas')

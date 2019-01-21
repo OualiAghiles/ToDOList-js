@@ -48,8 +48,30 @@ class ToDoList {
     this.container = selector
     this.input = this.container.querySelector('.js-input')
     this.listToDos = this.container.querySelector('.js-todos')
-   
+    this.todos = JSON.parse(localStorage.getItem('list')) || [];
+    console.log(this.todos);
+    if (this.todos.length > 0 ) {
+      this.todos.forEach( item => {
+        this.listToDos.insertAdjacentHTML('beforeend',
+        `<a href="#" class="panel-block">
+        <span class="panel-icon"><i class="fas fa-check"></i></span>
+        <span class="js-txt-todo">${item}</span>
+        <span class="js_action_button">
+          <span class=" icon has-text-grey-light" data-action="completedToDo">
+            <i class="fas fa-check"></i>
+          </span>
+          <span class=" is-small is-info is-outlined" data-action="editToDo">
+            <i class="fas fa-edit"></i>
+          </span>
+          <span class=" is-small is-outlined is-danger" data-action="removeToDo">
+            <i class="fas fa-trash-alt"></i>
+          </span>
+        </span> </div>`)
+        this.actionBtns(item)
+      })
+    }
     this.addTodo()
+
   }
 
   /**
@@ -72,88 +94,103 @@ class ToDoList {
     let btnAdd = this.container.querySelector('[data-action = "addToDo"]')
     btnAdd.addEventListener('click', (e) => {
       this.addingContent()
+      e.stopPropagation()
     })
   }
+
   addingContent () {
     let contentToDo = this.input.value
-      if (contentToDo !== "") {
-        if (!this.container.querySelector('.js-is-edited')) {
+      if (contentToDo === "") {
+        this.showFeedback('veillez remplir le champ ! ', 'is-danger')
+      } else if (contentToDo !== "") {
+        if (!this.listToDos.querySelector('.js-is-edited')) {
           this.creatElementList(contentToDo)
+
+          this.actionBtns(contentToDo)
         } else {
-          let editedToDo = this.container.querySelector('.js-is-edited ')
+          let editedToDo = this.listToDos.querySelector('.js-is-edited ')
           let correcteToDo = editedToDo.querySelector('.js-txt-todo')
           correcteToDo.innerText = contentToDo
           editedToDo.classList.remove('js-is-edited')
           editedToDo.classList.remove('is-active')
         }
+        this.todos.push(contentToDo)
+        localStorage.setItem('list', JSON.stringify(this.todos))
         this.input.value = ''
-      } else {
-        return false
       }
-      this.editToDo()
-      this.removeTodo()
-      this.completeToDo()
-
       this.input.focus()
+
   }
+  showFeedback (text, cls) {
+    let notification = document.querySelector('.notification')
+    notification.classList.add(cls)
+    notification.classList.remove('is-hidden')
+    notification.innerText = text
+    setTimeout(() => {
+      notification.classList.add('is-hidden')
+      notification.classList.remove(cls)
+      notification.innerText = ""
+
+    }, 3000);
+  }
+
+  /**
+   *
+   */
+  actionBtns (contentToDo) {
+    let items = this.listToDos.querySelectorAll('.panel-block')
+      items.forEach(item => {
+          if (item.querySelector('.js-txt-todo').textContent === contentToDo) {
+            this.completedToDo(item.querySelector('[data-action="completedToDo"]'))
+            this.editToDo(item.querySelector('[data-action="editToDo"]'))
+            this.removeToDo(item.querySelector('[data-action = "removeToDo"]'))
+
+          }
+        })
+    }
   /**
    *
    * @param btnEdit
    */
-  editToDo () {
-    let btnEdit = this.container.querySelectorAll('[data-action = "editToDo"]')
-    btnEdit.forEach(elem => {
-      elem.addEventListener('click', (e) => {
-
-        elem.parentNode.parentNode.classList.add('js-is-edited')
-        elem.parentNode.parentNode.classList.add('is-active')
-
+  editToDo (elem) {
+        elem.addEventListener('click', (e) => {
+        let task = elem.parentNode.parentNode
         let contentText = elem.parentNode.parentNode.querySelector('.js-txt-todo')
         this.input.value = contentText.innerHTML
+        let text = contentText.innerHTML.toString()
+        this.todos = this.todos.filter(function(item) {
+          return item !== text;
+        })
+        task.remove()
+        localStorage.setItem('list', JSON.stringify(this.todos))
         this.input.focus()
         e.stopPropagation()
       })
-    })
-
   }
 
-  /**
-   *
-   */
-  completeToDo () {
-    let todos = this.listToDos.querySelectorAll('.panel-block')
-    console.log(todos);
-    todos.forEach(todo => {
-      todo.addEventListener('click', function(e)  {
-        console.log(e);
-        console.log(this);
-
-        if (this.classList.contains('js-is-completed')) {
-          this.classList.remove('js-is-completed')
-
-        } else {
-          this.classList.add('js-is-completed')
-
-        }
-      })
+  completedToDo (item) {
+    item.addEventListener('click', () => {
+      let todo = item.parentNode.parentNode
+      todo.classList.toggle('js-is-completed')
     })
-    
   }
-
   /**
    *
-   * @param 
+   * @param
    * Description - removeTodo
    */
-  removeTodo () {
-    let btnremove = this.container.querySelectorAll('[data-action = "removeToDo"]')
-    btnremove.forEach(removetodo => {
-      removetodo.addEventListener('click', (e) => {
+  removeToDo (removeToDo) {
+      removeToDo.addEventListener('click', (e) => {
         e.stopPropagation()
-        let toRemove = removetodo.parentNode.parentNode
+        let toRemove = removeToDo.parentNode.parentNode
+        let text = toRemove.querySelector('.js-txt-todo').innerText
+        this.todos = this.todos.filter(function(item) {
+          return item !== text;
+        })
         toRemove.remove()
+        localStorage.setItem('list', JSON.stringify(this.todos))
+        this.showFeedback ('La tache a bien etais supprimé', 'is-success')
       })
-    })
   }
 
   /**
@@ -166,54 +203,21 @@ class ToDoList {
   creatElementList(innerText) {
     let newToDo = document.createElement("a")
     newToDo.classList.add('panel-block')
-
-    let newToDoIcon = document.createElement("span")
-    newToDoIcon.classList.add('panel-icon')
-
-    let newToDoIconFa = document.createElement("i")
-    newToDoIconFa.classList.add('fas')
-    newToDoIconFa.classList.add('fa-check')
-
-    let newText = document.createElement("span")
-    newText.classList.add('js-txt-todo')
-    newText.innerHTML = innerText
-
-    let btnAction = document.createElement("span")
-    btnAction.classList.add('buttons')
-    btnAction.classList.add('has-addons')
-    // btn Edit
-    let btnEdit = document.createElement("span")
-    btnEdit.classList.add('button')
-    btnEdit.classList.add('is-small')
-    btnEdit.classList.add('is-info')
-    btnEdit.classList.add('is-outlined')
-
-    btnEdit.dataset.action = 'editToDo'
-    let editIcone = document.createElement("i")
-    editIcone.classList.add('fas')
-    editIcone.classList.add('fa-edit')
-    btnEdit.appendChild(editIcone)
-    // btn remove
-    let btnRemoveToDo = document.createElement("span")
-    btnRemoveToDo.classList.add('button')
-    btnRemoveToDo.classList.add('is-small')
-    btnRemoveToDo.classList.add('is-outlined')
-    btnRemoveToDo.classList.add('is-danger')
-    btnRemoveToDo.dataset.action = 'removeToDo'
-    let btnRemoveToDoIcone = document.createElement("i")
-    btnRemoveToDoIcone.classList.add('fas')
-    btnRemoveToDoIcone.classList.add('fa-trash-alt')
-    btnRemoveToDo.appendChild(btnRemoveToDoIcone)
-    /// btns
-    btnAction.appendChild(btnEdit)
-    btnAction.appendChild(btnRemoveToDo)
-
-    newToDoIcon.appendChild(newToDoIconFa)
-    newToDo.appendChild(newToDoIcon)
-    newToDo.appendChild(newText)
-    newToDo.appendChild(btnAction)
-
-    this.listToDos.prepend(newToDo)
+    newToDo.innerHTML = `
+    <span class="panel-icon"><i class="fas fa-check"></i></span>
+    <span class="js-txt-todo">${innerText}</span>
+    <span class="js_action_button">
+      <span class=" icon has-text-grey-light" data-action="completedToDo">
+        <i class="fas fa-check"></i>
+      </span>
+      <span class=" is-small is-info is-outlined" data-action="editToDo">
+        <i class="fas fa-edit"></i>
+      </span>
+      <span class=" is-small is-outlined is-danger" data-action="removeToDo">
+        <i class="fas fa-trash-alt"></i>
+      </span>
+    </span>`
+    this.listToDos.appendChild(newToDo)
   }
 }
 

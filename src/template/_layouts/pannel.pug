@@ -1,0 +1,29 @@
+.panel
+  .panel-heading
+    | repositories
+  .panel-block
+    .field.has-addons.is-expanded
+      .control.is-expanded
+        input.input.js-input.is-fullwidth(type='text', placeholder='Find a repository')
+      .control
+        a.button.is-info(role="button", data-action ="addToDo")
+          i.fas.fa-plus
+  .panel-tabs
+    a.is-active all
+    a public
+    a private
+    a sources
+    a forks
+  .js-todos
+  .js-footer
+    .panel-block
+      .buttons
+        button.button.is-link.is-outlined
+          | reset all filters
+        button.button.is-link.is-outlined
+          | reset all filters
+        button.button.is-link.is-outlined
+          | reset all filters
+        button.button.is-link.is-outlined
+          | reset all filters
+

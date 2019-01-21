@@ -1,5 +1,14 @@
 extends ../_layouts/wrapper
 block content
+  .modal(data-modal = 'addList')
+    .modal-background
+    .modal-content
+      .box
+        // Any other Bulma elements you want
+        button.modal-close.is-large(aria-label='close')
+        h3.title Ajouter une liste de taches a faire
+        input.input(type="text" placeholder="Text input") 
+        a.button.is-success( data-tab = "panel-tab" ) ajouter une liste
   section.section
     .container
       .notification.is-hidden

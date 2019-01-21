@@ -221,4 +221,61 @@ class ToDoList {
   }
 }
 
+
+class Modal {
+  constructor (cls) {
+    this.modal = cls
+    this.target = this.modal.dataset.target
+    this.targetModal = document.querySelector('[data-modal = "'+this.target+'"]')
+    this.linksTab = document.querySelector('.panel-tabs')
+
+    /*********************** */
+    this.tabs = JSON.parse(localStorage.getItem('tabs')) || [];
+    console.log(this.tabs);
+    if (this.tabs.length > 0 ) {
+      this.tabs.forEach( item => {
+        this.linksTab.insertAdjacentHTML('beforeend',
+        `<a href="${item}">${item}</a>`)
+        //this.actionBtns(item)
+      })
+    }
+    /****************************** */
+    this.activeModal(this.modal)
+    this.closeModal()
+    this.addTab()
+  }
+  activeModal(modal) {
+    modal.addEventListener('click' , (e) => {
+      e.preventDefault()
+      this.targetModal.classList.add('is-active')
+      console.log(this.targetModal);
+    })
+  }
+  closeModal () {
+    
+    let closeModal = this.targetModal.querySelector('.modal-close')
+    console.log(closeModal);
+      
+    closeModal.addEventListener('click', () => {
+      console.log(this.targetModal);
+      this.targetModal.classList.remove('is-active')  
+    })
+  }
+  addTab () {
+    let btnAddTab = this.targetModal.querySelector('[data-tab = "panel-tab"]')
+    let newTab = this.targetModal.querySelector('.input')
+    btnAddTab.addEventListener('click', () => {
+      let titleList = newTab.value
+      let linkTab = document.createElement('a')
+      linkTab.setAttribute('href', titleList)
+      linkTab.innerText = titleList
+      this.linksTab.appendChild(linkTab)
+      this.targetModal.classList.remove('is-active')
+      this.tabs.push(titleList)
+      localStorage.setItem('tabs', JSON.stringify(this.tabs))
+    })
+  }
+}
+
 new ToDoList(document.querySelector('.panel'))
+new Modal(document.querySelector('[data-target = "addList"]'))

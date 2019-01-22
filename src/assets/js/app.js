@@ -1,40 +1,3 @@
-/* model retour des erreurs
-try {
-    if (tab[5]) {
-        console.log(" element existant");
-
-    } else {
-        throw new Error('cet element n\'existe pas ')
-    }
-
-} catch (error) {
-    console.error(error)
-}
-
-
-*/
-//
-// -------------- partie une --------------------
-//      -- Creation --
-//  * selectionner le chanmp text dans le block todo
-//  * capturer le text dans le champ text
-//  * effacer le contenu du chanmp
-//  * ajouter un element a la liste contenant le text capturer
-//
-// -------------- partie deux --------------------
-//      -- Edition --
-// au click sur une todo barrer
-//      * si click sur le btn edite capturer le text
-//      * mettre le text dans le champ
-//      * si
-//          * valider (partie une)
-//      * sinon ne rien faire
-//
-// ---------------- Partie trois -------------------
-//      -- suppretion --
-
-
-
 class ToDoList {
 
   /**
@@ -44,18 +7,50 @@ class ToDoList {
    *
    * @returns {HTMLElement} Description
    */
-  constructor (selector) {
-    this.container = selector
-    this.input = this.container.querySelector('.js-input')
-    this.listToDos = this.container.querySelector('.js-todos')
-    this.todos = JSON.parse(localStorage.getItem('list')) || [];
-    console.log(this.todos);
+  constructor (selector, store) {
+    window.activeList = null;
+    this.store = store;
+    this.container = selector;
+    this.input = this.container.querySelector('.js-input');
+    this.listToDos = this.container.querySelector('.js-todos');
+    this.modal = document.querySelector('[data-target = "addList"]');
+    this.target = this.modal.dataset.target;
+    this.tabs = this.store.get();
+    this.tabs = this.tabs.map((e) => e.name)
+    console.log(this.tabs)
+
+    this.targetModal = document.querySelector('[data-modal = "'+this.target+'"]');
+    this.linksTab = document.querySelector('.panel-tabs');
+    // const todos = JSON.parse(localStorage.getItem('todos')) || [];
+
+    this.renderTodos();
+    this.addTodo();
+    this.tabAction();
+    window.addEventListener('lists-updated', () => {
+      this.renderTodos();
+      console.log('rerender todos');
+      //this.tabAction()
+    });
+    this.addTab();
+  }
+
+  renderTodos () {
+    this.listToDos.innerHTML = ''
+    const todos = this.store.get()
+    this.todos = []
+    if (window.activeList !== null) {
+      this.todos.push(...todos[window.activeList].items)
+    } else {
+      todos.forEach(list => this.todos.push(...list.items))
+    }
+
+    // todosToBeRendered.forEach(list => this.todos.push(...list.items))
     if (this.todos.length > 0 ) {
       this.todos.forEach( item => {
         this.listToDos.insertAdjacentHTML('beforeend',
         `<a href="#" class="panel-block">
         <span class="panel-icon"><i class="fas fa-check"></i></span>
-        <span class="js-txt-todo">${item}</span>
+        <span class="js-txt-todo">${item.name}</span>
         <span class="js_action_button">
           <span class=" icon has-text-grey-light" data-action="completedToDo">
             <i class="fas fa-check"></i>
@@ -70,8 +65,6 @@ class ToDoList {
         this.actionBtns(item)
       })
     }
-    this.addTodo()
-
   }
 
   /**
@@ -104,18 +97,20 @@ class ToDoList {
         this.showFeedback('veillez remplir le champ ! ', 'is-danger')
       } else if (contentToDo !== "") {
         if (!this.listToDos.querySelector('.js-is-edited')) {
-          this.creatElementList(contentToDo)
+          // this.creatElementList(contentToDo)
 
-          this.actionBtns(contentToDo)
+          // this.actionBtns(contentToDo)
         } else {
-          let editedToDo = this.listToDos.querySelector('.js-is-edited ')
-          let correcteToDo = editedToDo.querySelector('.js-txt-todo')
-          correcteToDo.innerText = contentToDo
-          editedToDo.classList.remove('js-is-edited')
-          editedToDo.classList.remove('is-active')
+          // let editedToDo = this.listToDos.querySelector('.js-is-edited ')
+          // let correcteToDo = editedToDo.querySelector('.js-txt-todo')
+          // correcteToDo.innerText = contentToDo
+          // editedToDo.classList.remove('js-is-edited')
+          // editedToDo.classList.remove('is-active')
         }
-        this.todos.push(contentToDo)
-        localStorage.setItem('list', JSON.stringify(this.todos))
+        // recuperer l'index
+
+        // ajouter au store
+        this.store.createTodo(window.activeList, {name: contentToDo, state: 'new'})
         this.input.value = ''
       }
       this.input.focus()
@@ -187,12 +182,65 @@ class ToDoList {
         this.todos = this.todos.filter(function(item) {
           return item !== text;
         })
-        toRemove.remove()
-        localStorage.setItem('list', JSON.stringify(this.todos))
-        this.showFeedback ('La tache a bien etais supprimé', 'is-success')
       })
   }
+  addTab () {
 
+    let btnAddTab = this.targetModal.querySelector('[data-tab = "panel-tab"]')
+    let newTab = this.targetModal.querySelector('.input')
+    btnAddTab.addEventListener('click', () => {
+      console.log(this.tabs)
+      let titleList = newTab.value
+      let linkTab = document.createElement('a')
+      this.tabs.push(titleList)
+        // `<a href="#", data-index=${index}>${item}</a>`
+      linkTab.setAttribute('href', '#')
+      linkTab.setAttribute('data-index', this.tabs.length-1);
+      linkTab.innerText = titleList
+      this.linksTab.appendChild(linkTab)
+      const node = document.querySelectorAll('.panel-tabs a')[this.tabs.length]
+      node.addEventListener('click', (e)=>{
+          e.preventDefault()
+          if (typeof(node.dataset.index) === "undefined") {
+            window.activeList = null
+          } else {
+            window.activeList = node.dataset.index
+          }
+          window.dispatchEvent(new Event('lists-updated'))
+        })
+      this.targetModal.classList.remove('is-active')
+      //this.tabs.push(titleList)
+      //localStorage.setItem('tabs', JSON.stringify(this.tabs))
+      this.store.createList(titleList)
+      console.log('addtab', this.tabs);
+    })
+  }
+  tabAction (index = null) {
+    console.log('linktab', this.linksTab)
+    if (index === null) {
+      if (this.tabs.length > 0 ) {
+        this.tabs.forEach( (item, index )=> {
+          this.linksTab.insertAdjacentHTML('beforeend',
+            `<a href="#", data-index=${index}>${item}</a>`)
+          //this.actionBtns(item)
+        })
+      }
+      let tabsLink = document.querySelectorAll('.panel-tabs a')
+      tabsLink.forEach(link => {
+        link.addEventListener('click', (e)=>{
+          e.preventDefault()
+          if (typeof(link.dataset.index) === "undefined") {
+            window.activeList = null
+          } else {
+            window.activeList = link.dataset.index
+          }
+          window.dispatchEvent(new Event('lists-updated'))
+        })
+      })
+    } else {
+
+    }
+  }
   /**
    * creatElementList - create To-do container html
    *
@@ -219,63 +267,66 @@ class ToDoList {
     </span>`
     this.listToDos.appendChild(newToDo)
   }
+
 }
 
 
 class Modal {
-  constructor (cls) {
+  constructor (cls, dataStore) {
+    this.dataStore = dataStore
     this.modal = cls
     this.target = this.modal.dataset.target
     this.targetModal = document.querySelector('[data-modal = "'+this.target+'"]')
-    this.linksTab = document.querySelector('.panel-tabs')
-
-    /*********************** */
-    this.tabs = JSON.parse(localStorage.getItem('tabs')) || [];
-    console.log(this.tabs);
-    if (this.tabs.length > 0 ) {
-      this.tabs.forEach( item => {
-        this.linksTab.insertAdjacentHTML('beforeend',
-        `<a href="${item}">${item}</a>`)
-        //this.actionBtns(item)
-      })
-    }
-    /****************************** */
     this.activeModal(this.modal)
     this.closeModal()
-    this.addTab()
   }
   activeModal(modal) {
     modal.addEventListener('click' , (e) => {
       e.preventDefault()
       this.targetModal.classList.add('is-active')
-      console.log(this.targetModal);
     })
   }
   closeModal () {
-    
     let closeModal = this.targetModal.querySelector('.modal-close')
-    console.log(closeModal);
-      
     closeModal.addEventListener('click', () => {
-      console.log(this.targetModal);
-      this.targetModal.classList.remove('is-active')  
-    })
-  }
-  addTab () {
-    let btnAddTab = this.targetModal.querySelector('[data-tab = "panel-tab"]')
-    let newTab = this.targetModal.querySelector('.input')
-    btnAddTab.addEventListener('click', () => {
-      let titleList = newTab.value
-      let linkTab = document.createElement('a')
-      linkTab.setAttribute('href', titleList)
-      linkTab.innerText = titleList
-      this.linksTab.appendChild(linkTab)
       this.targetModal.classList.remove('is-active')
-      this.tabs.push(titleList)
-      localStorage.setItem('tabs', JSON.stringify(this.tabs))
     })
   }
 }
 
-new ToDoList(document.querySelector('.panel'))
-new Modal(document.querySelector('[data-target = "addList"]'))
+class dataStore {
+  get () {
+    return [{name: 'first list', items: [{name: 'tache 1', state: 'completed'}]}, {name: 'Second list', items: [{name: 'tache 2', state: 'new'}]}, ]
+  }
+
+}
+
+class localStorageStore {
+  get () {
+    return JSON.parse(localStorage.getItem('todos')) || []
+  }
+  updateLists (lists) {
+    localStorage.setItem('todos', JSON.stringify(lists))
+    window.dispatchEvent(new Event('lists-updated'))
+  }
+  createList (name) {
+    //recuperer les listes existante
+    const lists = this.get()
+    lists.push({ name:name, items: []})
+    // update
+    localStorage.setItem('todos', JSON.stringify(lists))
+    // ajouter une todo
+    // nom de la list
+    // information de la todo
+  }
+  createTodo (index, todo) {
+    const lists = this.get()
+    lists[index].items.push(todo)
+    this.updateLists(lists)
+  }
+}
+const DataStore = new localStorageStore()
+new ToDoList(document.querySelector('.panel'), DataStore)
+new Modal(document.querySelector('[data-target = "addList"]'), DataStore )
+
+//
